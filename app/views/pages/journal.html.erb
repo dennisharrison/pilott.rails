@@ -1,0 +1,369 @@
+<div id="JournalControlWrapper">
+  <div id="JournalControl">
+    <div class="aeon_drag widget_draggable text_widget">Text</div>
+    <div class="aeon_drag widget_draggable draw_widget">Draw</div>
+    <div class="aeon_drag widget_draggable cornell_notes_widget">Cornell Notes</div>
+    <div class="aeon_drag widget_draggable graphic_organizer_widget">Graphic Organizer</div>
+  </div>
+</div>
+
+<div id="JournalWrapper">
+  <div id="Journal">
+    <div class="hard front_cover_outside">
+    <div class="front_cover_title" contenteditable>My Journal</div>
+    </div>
+    <div class="hard front_cover_inside"><div class="front_cover_inside_content" contenteditable></div></div>
+    <div class="page"><div id="PageContentArea_1" class="page_content_area"></div><div class="page_number">1</div></div>
+    <div class="page"><div id="PageContentArea_2" class="page_content_area"></div><div class="page_number">2</div></div>
+    <div class="page"><div id="PageContentArea_3" class="page_content_area"></div><div class="page_number">3</div></div>
+    <div class="page"><div id="PageContentArea_4" class="page_content_area"></div><div class="page_number">4</div></div>
+    <div class="page"><div id="PageContentArea_5" class="page_content_area"></div><div class="page_number">5</div></div>
+    <div class="page"><div id="PageContentArea_6" class="page_content_area"></div><div class="page_number">6</div></div>
+    <div class="page"><div id="PageContentArea_7" class="page_content_area"></div><div class="page_number">7</div></div>
+    <div class="page"><div id="PageContentArea_8" class="page_content_area"></div><div class="page_number">8</div></div>
+    <div class="page"><div id="PageContentArea_9" class="page_content_area"></div><div class="page_number">9</div></div>
+    <div class="page"><div id="PageContentArea_10" class="page_content_area"></div><div class="page_number">10</div></div>
+    <div class="hard back_cover_inside"></div>
+    <div class="hard back_cover_outside"></div>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  var current_pages = [];
+
+  $("#Journal").turn({
+    width: 1018,
+    height: 622,
+    acceleration: true,
+    display: "double"
+  });
+
+  $("#Journal").bind("start", function(event, page, view) {
+    console.log("start");
+    $("[page]").find(".page_content_area").removeClass('hidden');
+  });
+
+  $("#Journal").bind("turned", function(event, page, view) {
+    console.log("turned");
+    current_pages = view;
+    $("[page]").find(".page_content_area").removeClass('hidden');
+    var draw_listings = $('.draw_listing');
+    _.each(draw_listings, function(draw_listing){
+      var id = $(draw_listing).attr('id');
+      setSketchableID(id);
+    });
+  });
+
+  $("#Journal").bind("end", function(event, page, view) {
+    console.log("end");
+    $("[page]").find(".page_content_area").removeClass('hidden');
+  });
+
+  $("#Journal").bind("turning", function(event, page, view) {
+    console.log("turning");
+      var right_page_number = (Number(page) - 1);
+      var left_page_number = (right_page_number - 1);
+      if(left_page_number > 0){
+        //console.log("Left Page is: " + left_page_number);
+        //$("#LeftPageNumber").html(left_page_number);
+        //$("#PageNumbersWrapper").removeClass('hidden');
+      } else {
+        //$("#LeftPageNumber").html('');
+      }
+      if(right_page_number > 0){
+        //console.log("Right Page is: " + right_page_number);
+        //$("#RightPageNumber").html(right_page_number);
+        //$("#PageNumbersWrapper").removeClass('hidden');
+      } else {
+        //$("#RightPageNumber").html('');
+      }
+  });
+
+  $(".cornell_notes_widget").draggable({
+    revert: true,
+    revertDuration: 100,
+    scope: 'page_widgets',
+    appendTo: 'body',
+    zIndex: 2000,
+    helper: function(event){
+      var item_stub;
+      $.ajax({
+        url: "/cornell_notes_stub",
+        dataType: 'html',
+        async: false,
+        success: function(data){
+          item_stub = $(data).addClass('stub');
+        }
+      });
+      return item_stub;
+    },
+    start: function(event, ui){
+      var pages = $("[page]");
+      _.each(pages, function(page_ui){
+        var page_number = Number($(page_ui).attr('page'));
+        if(_.contains(current_pages, page_number)){
+          $("[page='" + page_number + "']").find(".page_content_area").removeClass('hidden');
+          console.log("showing page " + page_number);
+        } else {
+          $("[page='" + page_number + "']").find(".page_content_area").addClass('hidden');
+          console.log("hiding page " + page_number);
+        }
+      });
+      reset_page_interactivity();
+    },
+    stop: function(event, ui){
+      $("[page]").find(".page_content_area").removeClass('hidden');
+      console.log("drag stopped!");
+    }
+  });
+
+  $(".graphic_organizer_widget").draggable({
+    revert: true,
+    revertDuration: 100,
+    scope: 'page_widgets',
+    appendTo: 'body',
+    zIndex: 2000,
+    helper: function(event){
+      var item_stub;
+      $.ajax({
+        url: "/graphic_organizer_stub",
+        dataType: 'html',
+        async: false,
+        success: function(data){
+          item_stub = $(data).addClass('stub');
+        }
+      });
+      return item_stub;
+    },
+    start: function(event, ui){
+      var pages = $("[page]");
+      _.each(pages, function(page_ui){
+        var page_number = Number($(page_ui).attr('page'));
+        if(_.contains(current_pages, page_number)){
+          $("[page='" + page_number + "']").find(".page_content_area").removeClass('hidden');
+          console.log("showing page " + page_number);
+        } else {
+          $("[page='" + page_number + "']").find(".page_content_area").addClass('hidden');
+          console.log("hiding page " + page_number);
+        }
+      });
+      reset_page_interactivity();
+    },
+    stop: function(event, ui){
+      $("[page]").find(".page_content_area").removeClass('hidden');
+      console.log("drag stopped!");
+    }
+  });
+
+  $(".draw_widget").draggable({
+    revert: true,
+    revertDuration: 100,
+    scope: 'page_widgets',
+    appendTo: 'body',
+    zIndex: 2000,
+    helper: function(event){
+      var item_stub;
+      $.ajax({
+        url: "/draw_stub",
+        dataType: 'html',
+        async: false,
+        success: function(data){
+          item_stub = $(data).addClass('stub');
+        }
+      });
+      return item_stub;
+    },
+    start: function(event, ui){
+      var pages = $("[page]");
+      _.each(pages, function(page_ui){
+        var page_number = Number($(page_ui).attr('page'));
+        if(_.contains(current_pages, page_number)){
+          $("[page='" + page_number + "']").find(".page_content_area").removeClass('hidden');
+          console.log("showing page " + page_number);
+        } else {
+          $("[page='" + page_number + "']").find(".page_content_area").addClass('hidden');
+          console.log("hiding page " + page_number);
+        }
+      });
+      reset_page_interactivity();
+    },
+    stop: function(event, ui){
+      $("[page]").find(".page_content_area").removeClass('hidden');
+      console.log("drag stopped!");
+    }
+  });
+
+  $(".text_widget").draggable({
+    revert: true,
+    revertDuration: 100,
+    scope: 'page_widgets',
+    appendTo: 'body',
+    zIndex: 2000,
+    helper: function(event){
+      var item_stub;
+      $.ajax({
+        url: "/text_stub",
+        dataType: 'html',
+        async: false,
+        success: function(data){
+          item_stub = $(data).addClass('stub');
+        }
+      });
+      return item_stub;
+    },
+    start: function(event, ui){
+      var pages = $("[page]");
+      _.each(pages, function(page_ui){
+        var page_number = Number($(page_ui).attr('page'));
+        if(_.contains(current_pages, page_number)){
+          $("[page='" + page_number + "']").find(".page_content_area").removeClass('hidden');
+          console.log("showing page " + page_number);
+        } else {
+          $("[page='" + page_number + "']").find(".page_content_area").addClass('hidden');
+          console.log("hiding page " + page_number);
+        }
+      });
+      reset_page_interactivity();
+    },
+    stop: function(event, ui){
+      $("[page]").find(".page_content_area").removeClass('hidden');
+      console.log("drag stopped!");
+    }
+  });
+
+  $(document).on('keypress', '.add_flip_tab', function(event){
+    var self = $(this);
+    console.log(self);
+    if(event.which !== 13){
+      console.log("Another Key");
+    } else {
+      var value = self.attr('value');
+      var graphic_organizer = self.closest("[model_root='true']");
+      var flip_tabs_list = graphic_organizer.find(".flip_tabs_list");
+      console.log("Creating new flip tab with title of : " + value);
+      var params = {
+        title: value
+      }
+      var item_stub;
+      $.ajax({
+        url: "/flip_tab_stub",
+        dataType: 'html',
+        data: params,
+        success: function(data){
+          flip_tabs_list.append(data);
+          self.attr('value', '');
+        }
+      });
+    }
+  });
+
+  $(document).on('click', '.flip_tab_listing .title', function(){
+    var self = $(this);
+    var flip_tab_listing = self.closest("[model_root='true']");
+    if(flip_tab_listing.hasClass('flip_to_back')){
+      if(flip_tab_listing.hasClass('flip_to_front')){
+        flip_tab_listing.removeClass('flip_to_back flip_to_front');
+        flip_tab_listing.addClass('flip_to_back');
+        flip_tab_listing.find('.content').attr('contenteditable', 'true');
+      } else {
+        flip_tab_listing.addClass('flip_to_front');
+        flip_tab_listing.find('.content').removeAttr('contenteditable');
+      }
+    } else {
+      flip_tab_listing.addClass('flip_to_back');
+      flip_tab_listing.find('.content').attr('contenteditable', 'true');
+    }
+  });
+
+  $(document).on('click', '.flip_tab_listing .back_to_front', function(){
+    var self = $(this);
+    var flip_tab_listing = self.closest("[model_root='true']");
+    if(flip_tab_listing.hasClass('flip_to_back')){
+      if(flip_tab_listing.hasClass('flip_to_front')){
+        flip_tab_listing.removeClass('flip_to_back flip_to_front');
+        flip_tab_listing.addClass('flip_to_back');
+        flip_tab_listing.find('.content').attr('contenteditable', 'true');
+      } else {
+        flip_tab_listing.addClass('flip_to_front');
+        flip_tab_listing.find('.content').removeAttr('contenteditable');
+      }
+    } else {
+      flip_tab_listing.addClass('flip_to_back');
+      flip_tab_listing.find('.content').attr('contenteditable', 'true');
+    }
+  });
+
+  $(document).on('keyup', '.flip_tab_listing .content', function(){
+    var self = $(this);
+    var flip_tab_listing = self.closest("[model_root='true']");
+    var height = (self[0].scrollHeight) - 16;
+    flip_tab_listing.find('.title').css('padding-top', ((height/2) - 2) + "px");
+    flip_tab_listing.css('height', height);
+  });
+
+function reset_page_interactivity(){
+  $(".page_content_area").droppable({
+    scope: 'page_widgets',
+    addClasses: false,
+    greedy: true,
+    tolerance: "intersect",
+    drop: function(event, ui){
+      var self = $("#" + event.target.id);
+      console.log(event);
+      if(self.is(":visible")){
+        if(ui.draggable.hasClass('cornell_notes_widget')){
+          $.ajax({
+            url: "/cornell_notes_stub",
+            dataType: 'html',
+            async: false,
+            success: function(data){
+              self.append(data);
+            }
+          });
+        } else if(ui.draggable.hasClass('graphic_organizer_widget')){
+          $.ajax({
+            url: "/graphic_organizer_stub",
+            dataType: 'html',
+            async: false,
+            success: function(data){
+              self.append(data);
+            }
+          });
+        } else if(ui.draggable.hasClass('draw_widget')){
+          $.ajax({
+            url: "/draw_stub",
+            dataType: 'html',
+            async: false,
+            success: function(data){
+              var id = $(data).attr('id');
+              self.append(data);
+              setSketchableID(id);
+            }
+          });
+        } else if(ui.draggable.hasClass('text_widget')){
+          $.ajax({
+            url: "/text_stub",
+            dataType: 'html',
+            async: false,
+            success: function(data){
+              self.append(data);
+            }
+          });
+        }
+      }
+    }
+  });
+}
+
+
+  function setSketchableID(id) {
+    var ui = $("#" + id);
+    ui.sketch();
+  }
+
+$(document).ready(function(event){
+  reset_page_interactivity();
+});
+
+</script>
